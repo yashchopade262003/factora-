@@ -1,0 +1,115 @@
+# ===============================
+# Java / Spring Boot
+# ===============================
+target/
+build/
+out/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+logs/
+*.log
+*.pid
+*.seed
+
+# Maven
+.mvn/timing.properties
+
+# Gradle
+.gradle/
+
+# ===============================
+# IntelliJ IDEA
+# ===============================
+.idea/
+*.iml
+
+# ===============================
+# VS Code
+# ===============================
+.vscode/
+
+# ===============================
+# Eclipse
+# ===============================
+.project
+.classpath
+.settings/
+
+# ===============================
+# NetBeans
+# ===============================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+
+# ===============================
+# React
+# ===============================
+**/node_modules/
+**/build/
+**/dist/
+**/.cache/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Test Reports
+# ===============================
+coverage/
+*.lcov
+
+# ===============================
+# Temporary Files
+# ===============================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ===============================
+# Runtime Files
+# ===============================
+*.lock
+*.pid.lock
+
+# ===============================
+# Docker
+# ===============================
+docker-data/
+
+# ===============================
+# Local Spring Configurations
+# ===============================
+application-local.properties
+application-local.yml
+
+application-dev.properties
+application-dev.yml
+
+application-prod.properties
+application-prod.yml
+
+# ===============================
+# Secrets
+# ===============================
+*.key
+*.pem
+*.crt
+*.p12
+*.jks
