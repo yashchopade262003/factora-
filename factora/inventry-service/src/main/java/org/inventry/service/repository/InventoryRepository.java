@@ -1,5 +1,6 @@
 package org.inventry.service.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,20 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 	 List<Inventory> findByWarehouseId(Long warehouseId);
 	 
 	
-	 
+	 boolean existsByMaterialCode(String materialCode);
+
+	 boolean existsByBatchNumber(String batchNumber);
+
+	 List<Inventory> findByMaterialNameContainingIgnoreCase(String materialName);
+
+	 List<Inventory> findByBatchNumber(String batchNumber);
+
+	 List<Inventory> findByExpiryDateBefore(LocalDate date);
+
+	 List<Inventory> findByExpiryDateBetween(LocalDate start, LocalDate end);
+
+	 List<Inventory> findByReceivedDate(LocalDate receivedDate);
+
+	 List<Inventory> findByManufacturingDate(LocalDate manufacturingDate);
 	 
 }

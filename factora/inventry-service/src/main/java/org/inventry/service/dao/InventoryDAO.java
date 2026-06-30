@@ -1,5 +1,6 @@
 package org.inventry.service.dao;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,89 +8,161 @@ import org.inventry.service.entity.Inventory;
 import org.inventry.service.entity.InventoryStatus;
 import org.inventry.service.repository.InventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class InventoryDAO {
+
 	@Autowired
-	InventoryRepository inventoryRepository;
+	private InventoryRepository inventoryRepository;
 
 	
-	public boolean existsByMaterialCode(String code) {
-		
-		Optional<Inventory> byMaterialCode = inventoryRepository.findByMaterialCode(code);
-		if(byMaterialCode.isPresent()) {
-			return true;
-		}
-		return false;
-	}
+
 	public Inventory saveInventory(Inventory inventory) {
 		return inventoryRepository.save(inventory);
 	}
 
+
+	public boolean existsByMaterialCode(String code) {
+		return inventoryRepository.findByMaterialCode(code).isPresent();
+	}
+
+	public boolean existsByBatchNumber(String batchNumber) {
+		return inventoryRepository.existsByBatchNumber(batchNumber);
+	}
+
+	// =========================
+	// Find By ID
+	// =========================
+
+	public Optional<Inventory> getInventoryById(Long id) {
+		return inventoryRepository.findById(id);
+	}
+
+// fpr material
 	public Optional<Inventory> findByIdMaterialCode(String materialCode) {
 		return inventoryRepository.findByMaterialCode(materialCode);
+	}
 
+	public List<Inventory> findByMaterialName(String materialName) {
+		return inventoryRepository.findByMaterialNameContainingIgnoreCase(materialName);
 	}
-	
+
+	//gettonog all inventries
+
 	public List<Inventory> getAllInventries() {
-		return  inventoryRepository.findAll();
+		return inventoryRepository.findAll();
 	}
-	
+
+	public Page<Inventory> getAll(Pageable pageable) {
+		return inventoryRepository.findAll(pageable);
+	}
+
+	// delete methods
+
 	public boolean deleteById(Long id) {
-		
-		Optional<Inventory> byId = inventoryRepository.findById(id);
-		if(byId.isPresent()) {
-			
+
+		Optional<Inventory> inventory = inventoryRepository.findById(id);
+
+		if (inventory.isPresent()) {
+
 			inventoryRepository.deleteById(id);
+
 			return true;
 		}
+
 		return false;
-		
 	}
-	
-	public long getStockOfInventry() {
-		return inventoryRepository.count();
-	}
-	
-	public List<Inventory> findByWareHouseLocation(String location) {
-		return inventoryRepository.findByWarehouseLocation(location);
-	}
-	
-	
-	public Optional<Inventory> getInventoryById(Long id) {
-		return  inventoryRepository.findById(id);
-	}
-	
+
 	public void deleteAllInventory() {
 		inventoryRepository.deleteAll();
 	}
+
 	
-	
-	public List<Inventory> findByStatus(InventoryStatus status){
-	    return inventoryRepository.findByStatus(status);
+	// for dahjbord voew
+	public long getStockOfInventry() {
+		return inventoryRepository.count();
 	}
 
-	public List<Inventory> findByVendorId(Long vendorId){
-	    return inventoryRepository.findByVendorId(vendorId);
+	// for warehouse
+
+	public List<Inventory> findByWareHouseLocation(String location) {
+		return inventoryRepository.findByWarehouseLocation(location);
 	}
 
-	public List<Inventory> findByCategory(String category){
-	    return inventoryRepository.findByMaterialCategory(category);
+	public List<Inventory> findByWarehouseId(Long warehouseId) {
+		return inventoryRepository.findByWarehouseId(warehouseId);
 	}
 
-	public List<Inventory> findLowStock(Double minimumStock){
-	    return inventoryRepository.findByQuantityLessThanEqual(minimumStock);
+// for status 
+	public List<Inventory> findByStatus(InventoryStatus status) {
+		return inventoryRepository.findByStatus(status);
 	}
 
-	public List<Inventory> findBySupplier(Long supplierId){
-	    return inventoryRepository.findBySupplierId(supplierId);
+	// =========================
+	// Vendor
+	// =========================
+
+	public List<Inventory> findByVendorId(Long vendorId) {
+		return inventoryRepository.findByVendorId(vendorId);
 	}
 
-	public List<Inventory> findByWarehouseId(Long warehouseId){
-	    return inventoryRepository.findByWarehouseId(warehouseId);
+	// =========================
+	// Category
+	// =========================
+
+	public List<Inventory> findByCategory(String category) {
+		return inventoryRepository.findByMaterialCategory(category);
 	}
-	
-	
-	
+
+	// =========================
+	// Low Stock
+	// =========================
+
+	public List<Inventory> findLowStock(Double minimumStock) {
+		return inventoryRepository.findByQuantityLessThanEqual(minimumStock);
+	}
+
+	// =========================
+	// Supplier
+	// =========================
+
+	public List<Inventory> findBySupplier(Long supplierId) {
+		return inventoryRepository.findBySupplierId(supplierId);
+	}
+
+	// =========================
+	// Batch
+	// =========================
+
+	public List<Inventory> findByBatchNumber(String batchNumber) {
+		return inventoryRepository.findByBatchNumber(batchNumber);
+	}
+
+	// =========================
+	// Expiry
+	// =========================
+
+	public List<Inventory> findExpiredMaterials(LocalDate today) {
+		return inventoryRepository.findByExpiryDateBefore(today);
+	}
+
+	public List<Inventory> findExpiringMaterials(LocalDate start, LocalDate end) {
+		return inventoryRepository.findByExpiryDateBetween(start, end);
+	}
+
+	// =========================
+	// Date Search
+	// =========================
+
+	public List<Inventory> findByReceivedDate(LocalDate date) {
+		return inventoryRepository.findByReceivedDate(date);
+	}
+
+	public List<Inventory> findByManufacturingDate(LocalDate date) {
+		return inventoryRepository.findByManufacturingDate(date);
+	}
+
 }

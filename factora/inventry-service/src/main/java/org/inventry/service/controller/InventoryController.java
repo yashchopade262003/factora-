@@ -1,5 +1,6 @@
 package org.inventry.service.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.inventry.service.ResponceEntity.ResponseStructure;
@@ -8,6 +9,7 @@ import org.inventry.service.dto.InventoryDashboardDTO;
 import org.inventry.service.entity.InventoryStatus;
 import org.inventry.service.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +20,9 @@ public class InventoryController {
     @Autowired
     private InventoryService inventoryService;
 
-    // =======================
+    // ==========================================
     // CRUD APIs
-    // =======================
+    // ==========================================
 
     @PostMapping("/add")
     public ResponseEntity<ResponseStructure<InventoryDTO>> saveInventory(
@@ -63,15 +65,29 @@ public class InventoryController {
         return inventoryService.deleteAllInventory();
     }
 
-    // =======================
+    // ==========================================
     // Search APIs
-    // =======================
+    // ==========================================
 
     @GetMapping("/material/{materialCode}")
     public ResponseEntity<ResponseStructure<InventoryDTO>> findByMaterialCode(
             @PathVariable String materialCode) {
 
         return inventoryService.findByMaterialCode(materialCode);
+    }
+
+    @GetMapping("/material-name/{materialName}")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByMaterialName(
+            @PathVariable String materialName) {
+
+        return inventoryService.findByMaterialName(materialName);
+    }
+
+    @GetMapping("/batch/{batchNumber}")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByBatchNumber(
+            @PathVariable String batchNumber) {
+
+        return inventoryService.findByBatchNumber(batchNumber);
     }
 
     @GetMapping("/status/{status}")
@@ -116,9 +132,36 @@ public class InventoryController {
         return inventoryService.findByWarehouseId(warehouseId);
     }
 
-    // =======================
+    @GetMapping("/received/{date}")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByReceivedDate(
+            @PathVariable LocalDate date) {
+
+        return inventoryService.findByReceivedDate(date);
+    }
+
+    @GetMapping("/manufactured/{date}")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByManufacturingDate(
+            @PathVariable LocalDate date) {
+
+        return inventoryService.findByManufacturingDate(date);
+    }
+
+    @GetMapping("/expired")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getExpiredMaterials() {
+
+        return inventoryService.getExpiredMaterials();
+    }
+
+    @GetMapping("/expiring/{days}")
+    public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getExpiringMaterials(
+            @PathVariable int days) {
+
+        return inventoryService.getExpiringMaterials(days);
+    }
+
+    // ==========================================
     // Stock APIs
-    // =======================
+    // ==========================================
 
     @PutMapping("/stock-in/{id}")
     public ResponseEntity<ResponseStructure<InventoryDTO>> stockIn(
@@ -144,9 +187,9 @@ public class InventoryController {
         return inventoryService.adjustStock(id, quantity);
     }
 
-    // =======================
-    // Reports APIs
-    // =======================
+    // ==========================================
+    // Reports
+    // ==========================================
 
     @GetMapping("/available")
     public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getAvailableInventory() {
@@ -189,6 +232,20 @@ public class InventoryController {
     public ResponseEntity<ResponseStructure<InventoryDashboardDTO>> getDashboard() {
 
         return inventoryService.getDashboard();
+    }
+
+    // ==========================================
+    // Pagination
+    // ==========================================
+
+    @GetMapping("/page")
+    public ResponseEntity<ResponseStructure<Page<InventoryDTO>>> getInventoryByPage(
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "10") int size) {
+
+        return inventoryService.getInventoryByPage(page, size);
     }
 
 }
