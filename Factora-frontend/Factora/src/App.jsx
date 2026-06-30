@@ -11,7 +11,7 @@ import Dashboard from "./pages/Dashboard";
 
 import VendorList from "./pages/vendor/VendorList";
 import AddVendor from "./pages/vendor/AddVendor";
-import ViewVendor from "./pages/vendor/ViewVendor";
+import ViewVendor from "./pages/vendor/ViewVendo";
 
 import RoleList from "./pages/role/RoleList";
 import AddRole from "./pages/role/AddRole";
