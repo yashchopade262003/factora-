@@ -6,8 +6,10 @@ import java.util.Optional;
 
 import org.inventry.service.entity.Inventory;
 import org.inventry.service.entity.InventoryStatus;
+import org.inventry.service.exception.InventoryNotStoredException;
 import org.inventry.service.repository.InventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -18,12 +20,21 @@ public class InventoryDAO {
 	@Autowired
 	private InventoryRepository inventoryRepository;
 
-	
-
+	/**
+	 * Wraps the raw JPA save so persistence-layer failures (constraint violations,
+	 * connection issues, optimistic-lock conflicts, etc.) surface as a single
+	 * well-known exception the service layer and GlobalExceptionHandler know how to
+	 * translate into an HTTP response, instead of leaking a raw
+	 * DataAccessException/Hibernate exception.
+	 */
 	public Inventory saveInventory(Inventory inventory) {
-		return inventoryRepository.save(inventory);
+		try {
+			return inventoryRepository.save(inventory);
+		} catch (DataAccessException ex) {
+			throw new InventoryNotStoredException(
+					"Failed to persist inventory record: " + ex.getMostSpecificCause().getMessage());
+		}
 	}
-
 
 	public boolean existsByMaterialCode(String code) {
 		return inventoryRepository.findByMaterialCode(code).isPresent();
@@ -50,7 +61,7 @@ public class InventoryDAO {
 		return inventoryRepository.findByMaterialNameContainingIgnoreCase(materialName);
 	}
 
-	//gettonog all inventries
+	// gettonog all inventries
 
 	public List<Inventory> getAllInventries() {
 		return inventoryRepository.findAll();
@@ -80,7 +91,6 @@ public class InventoryDAO {
 		inventoryRepository.deleteAll();
 	}
 
-	
 	// for dahjbord voew
 	public long getStockOfInventry() {
 		return inventoryRepository.count();

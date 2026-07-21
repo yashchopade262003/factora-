@@ -17,22 +17,18 @@ import com.factoryflow.auth.dto.RoleDTO;
 @RequestMapping("/role")
 public class RoleController {
 
-    @Autowired
-    private IRoleService roleService;
+	@Autowired
+	private IRoleService roleService;
 
-    @PostMapping("/add")
-    public ResponseEntity<RoleDTO> addRole(
-            @RequestBody RoleDTO dto){
+	@PostMapping("/add")
+	public ResponseEntity<RoleDTO> addRole(@RequestBody RoleDTO dto) {
 
-        return ResponseEntity.ok(
-                roleService.addRole(dto));
-    }
+		return ResponseEntity.ok(roleService.addRole(dto));
+	}
 
-    @GetMapping("/list")
-    public ResponseEntity<List<RoleDTO>>
-    getAllRoles(){
+	@GetMapping("/list")
+	public ResponseEntity<List<RoleDTO>> getAllRoles() {
 
-        return ResponseEntity.ok(
-                roleService.getAllRoles());
-    }
+		return ResponseEntity.ok(roleService.getAllRoles());
+	}
 }

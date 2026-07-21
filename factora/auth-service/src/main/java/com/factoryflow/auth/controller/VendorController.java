@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.factoryflow.auth.InterfaceService.IVendorService;
+import com.factoryflow.auth.dto.InventoryDTO;
 import com.factoryflow.auth.dto.VendorDTO;
 
 @RestController
@@ -37,6 +38,13 @@ public class VendorController {
 	public ResponseEntity<List<VendorDTO>> getAllVendors() {
 
 		return ResponseEntity.ok(vendorService.getAllVendors());
+	}
+
+	// Communicates with inventory-service to fetch this vendor's inventory.
+	@GetMapping("/{id}/inventory")
+	public ResponseEntity<List<InventoryDTO>> getVendorInventory(@PathVariable Long id) {
+
+		return ResponseEntity.ok(vendorService.getVendorInventory(id));
 	}
 
 }

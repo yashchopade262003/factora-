@@ -7,43 +7,41 @@ import java.util.Optional;
 import org.inventry.service.entity.Inventory;
 import org.inventry.service.entity.InventoryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository; 
-
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-	
-	 Optional<Inventory> findByMaterialCode(String materialCode);
 
-	 List<Inventory> findByWarehouseLocation(String location);
+	Optional<Inventory> findByMaterialCode(String materialCode);
 
-	 List<Inventory> findByStatus(InventoryStatus status);
+	List<Inventory> findByWarehouseLocation(String location);
 
-	 List<Inventory> findByVendorId(Long vendorId);
+	List<Inventory> findByStatus(InventoryStatus status);
 
-	 List<Inventory> findByMaterialCategory(String materialCategory);
+	List<Inventory> findByVendorId(Long vendorId);
 
-	 List<Inventory> findByQuantityLessThanEqual(Double quantity);
+	List<Inventory> findByMaterialCategory(String materialCategory);
 
-	 List<Inventory> findBySupplierId(Long supplierId);
+	List<Inventory> findByQuantityLessThanEqual(Double quantity);
 
-	 List<Inventory> findByWarehouseId(Long warehouseId);
-	 
-	
-	 boolean existsByMaterialCode(String materialCode);
+	List<Inventory> findBySupplierId(Long supplierId);
 
-	 boolean existsByBatchNumber(String batchNumber);
+	List<Inventory> findByWarehouseId(Long warehouseId);
 
-	 List<Inventory> findByMaterialNameContainingIgnoreCase(String materialName);
+	boolean existsByMaterialCode(String materialCode);
 
-	 List<Inventory> findByBatchNumber(String batchNumber);
+	boolean existsByBatchNumber(String batchNumber);
 
-	 List<Inventory> findByExpiryDateBefore(LocalDate date);
+	List<Inventory> findByMaterialNameContainingIgnoreCase(String materialName);
 
-	 List<Inventory> findByExpiryDateBetween(LocalDate start, LocalDate end);
+	List<Inventory> findByBatchNumber(String batchNumber);
 
-	 List<Inventory> findByReceivedDate(LocalDate receivedDate);
+	List<Inventory> findByExpiryDateBefore(LocalDate date);
 
-	 List<Inventory> findByManufacturingDate(LocalDate manufacturingDate);
-	 
+	List<Inventory> findByExpiryDateBetween(LocalDate start, LocalDate end);
+
+	List<Inventory> findByReceivedDate(LocalDate receivedDate);
+
+	List<Inventory> findByManufacturingDate(LocalDate manufacturingDate);
+
 }

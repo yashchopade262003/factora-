@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.factoryflow.auth.InterfaceService.IVendorService;
+import com.factoryflow.auth.client.InventoryClient;
 import com.factoryflow.auth.dao.VendorDAO;
+import com.factoryflow.auth.dto.ApiResponse;
+import com.factoryflow.auth.dto.InventoryDTO;
 import com.factoryflow.auth.dto.VendorDTO;
 import com.factoryflow.auth.entity.Vendor;
 import com.factoryflow.auth.repository.VendorRepository;
@@ -20,6 +23,9 @@ public class VendorService implements IVendorService {
 
     @Autowired
     private VendorDAO vendordao;
+
+    @Autowired
+    private InventoryClient inventoryClient;
 
     @Override
     public VendorDTO addVendor(VendorDTO vendorDTO) {
@@ -58,6 +64,23 @@ public class VendorService implements IVendorService {
                                 vendor,
                                 VendorDTO.class))
                 .toList();
+    }
+
+    /**
+     * Communicates with inventory-service to fetch the inventory recorded
+     * against this vendor. Validates the vendor exists locally first (this
+     * service owns the Vendor record), then delegates the inventory lookup
+     * to InventoryClient.
+     */
+    @Override
+    public List<InventoryDTO> getVendorInventory(Long vendorId) {
+
+        // Ensures the vendor exists before calling out to inventory-service.
+        getVendorById(vendorId);
+
+        ApiResponse<List<InventoryDTO>> response = inventoryClient.getInventoryByVendor(vendorId);
+
+        return response.getData();
     }
 
 

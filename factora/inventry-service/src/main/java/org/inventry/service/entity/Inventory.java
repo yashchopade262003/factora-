@@ -73,10 +73,13 @@ public class Inventory {
 
     private String updatedBy;
 
+    // Optimistic locking: guards against lost updates when two requests
+    // (e.g. concurrent stock-in / stock-out calls) modify the same row.
+    @Version
+    private Long version;
+
     @PrePersist
     public void onCreate() {
-
-        System.out.println("PrePersist Executed");
 
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();

@@ -13,16 +13,20 @@ import org.inventry.service.entity.Inventory;
 import org.inventry.service.entity.InventoryStatus;
 import org.inventry.service.exception.InventoryException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class InventoryService {
+
+	private static final Logger log = LoggerFactory.getLogger(InventoryService.class);
 
 	@Autowired
 	private VendorClient vendorClient;
@@ -33,8 +37,11 @@ public class InventoryService {
 	@Autowired
 	private ModelMapper mapper;
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> saveInventory(InventoryDTO dto) {
 
+		// Throws VendorServiceException (404/503, handled globally) if the
+		// vendor doesn't exist or the Vendor service is unreachable.
 		vendorClient.getVendor(dto.getVendorId());
 
 		if (inventoryDAO.existsByMaterialCode(dto.getMaterialCode())) {
@@ -48,6 +55,9 @@ public class InventoryService {
 		Inventory savedInventory = inventoryDAO.saveInventory(inventory);
 
 		InventoryDTO responseDTO = mapper.map(savedInventory, InventoryDTO.class);
+
+		log.info("Inventory created: materialCode={}, vendorId={}, quantity={}",
+				savedInventory.getMaterialCode(), savedInventory.getVendorId(), savedInventory.getQuantity());
 
 		ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
 		response.setStatusCode(HttpStatus.CREATED.value());
@@ -90,6 +100,7 @@ public class InventoryService {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> updateInventory(Long id, InventoryDTO dto) {
 
 		Inventory inventory = inventoryDAO.getInventoryById(id)
@@ -154,6 +165,7 @@ public class InventoryService {
 		}
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<String>> deleteInventory(Long id) {
 
 		boolean deleted = inventoryDAO.deleteById(id);
@@ -249,6 +261,7 @@ public class InventoryService {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> stockIn(Long id, Double quantity) {
 
 	    if (quantity <= 0) {
@@ -264,6 +277,8 @@ public class InventoryService {
 
 	    Inventory saved = inventoryDAO.saveInventory(inventory);
 
+	    log.info("Stock-in: inventoryId={}, qtyAdded={}, newQuantity={}", id, quantity, saved.getQuantity());
+
 	    InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
 
 	    ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
@@ -274,6 +289,7 @@ public class InventoryService {
 	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> stockOut(Long id, Double quantity) {
 
 	    if (quantity <= 0) {
@@ -292,6 +308,8 @@ public class InventoryService {
 	    updateInventoryStatus(inventory);
 
 	    Inventory saved = inventoryDAO.saveInventory(inventory);
+
+	    log.info("Stock-out: inventoryId={}, qtyRemoved={}, newQuantity={}", id, quantity, saved.getQuantity());
 
 	    InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
 
@@ -371,6 +389,7 @@ public class InventoryService {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<String>> deleteAllInventory() {
 
 		inventoryDAO.deleteAllInventory();
@@ -384,6 +403,7 @@ public class InventoryService {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> adjustStock(Long id, Double quantity) {
 
 	    if (quantity < 0) {

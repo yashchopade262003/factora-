@@ -1,7 +1,5 @@
 package com.factoryflow.auth.config;
 
-
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,47 +12,41 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 @Configuration
 public class SwaggerConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
+	@Bean
+	public OpenAPI customOpenAPI() {
 
-        final String securitySchemeName =
-                "bearerAuth";
+		final String securitySchemeName = "bearerAuth";
 
-        return new OpenAPI()
+		return new OpenAPI()
 
-                .info(new Info()
+				.info(new Info()
 
-                        .title("Factory Flow API")
+						.title("Factory Flow API")
 
-                        .version("1.0"))
+						.version("1.0"))
 
-                .addSecurityItem(
+				.addSecurityItem(
 
-                        new SecurityRequirement()
+						new SecurityRequirement()
 
-                                .addList(
-                                        securitySchemeName))
+								.addList(securitySchemeName))
 
-                .components(
+				.components(
 
-                        new Components()
+						new Components()
 
-                                .addSecuritySchemes(
+								.addSecuritySchemes(
 
-                                        securitySchemeName,
+										securitySchemeName,
 
-                                        new SecurityScheme()
+										new SecurityScheme()
 
-                                                .name(
-                                                        securitySchemeName)
+												.name(securitySchemeName)
 
-                                                .type(
-                                                        SecurityScheme.Type.HTTP)
+												.type(SecurityScheme.Type.HTTP)
 
-                                                .scheme(
-                                                        "bearer")
+												.scheme("bearer")
 
-                                                .bearerFormat(
-                                                        "JWT")));
-    }
+												.bearerFormat("JWT")));
+	}
 }

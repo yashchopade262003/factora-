@@ -6,22 +6,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class CookieUtil {
 
-    public ResponseCookie createCookie(String jwt){
+	public ResponseCookie createCookie(String jwt) {
 
-        return ResponseCookie.from("JWT", jwt)
+		return ResponseCookie.from("JWT", jwt)
 
-                .httpOnly(true)
+				.httpOnly(true)
 
-                .secure(false)
+				.secure(false)
 
-                .path("/")
+				.path("/")
 
-                .maxAge(60*60)
+				.maxAge(60 * 60)
 
-                .sameSite("Lax")
+				.sameSite("Lax")
 
-                .build();
+				.build();
 
-    }
+	}
 
 }

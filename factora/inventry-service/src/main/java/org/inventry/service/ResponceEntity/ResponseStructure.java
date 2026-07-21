@@ -1,6 +1,6 @@
 package org.inventry.service.ResponceEntity;
 
-import lombok.AllArgsConstructor;
+import lombok.AllArgsConstructor; 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
