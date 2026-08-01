@@ -1,0 +1,101 @@
+/* Amazon-inspired global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Amazon Ember", Arial, sans-serif;
+    background: #f3f3f3;
+    color: #0f1111;
+    font-size: 14px;
+}
+
+/* Amazon-style buttons */
+.btn-primary {
+    background: linear-gradient(to bottom, #f0c040, #e5a910);
+    border: 1px solid #a88734;
+    border-radius: 3px;
+    color: #111;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, #e8ba32, #d4980a);
+}
+
+.btn-secondary {
+    background: linear-gradient(to bottom, #f7f8fa, #e7e9ec);
+    border: 1px solid #adb1b8;
+    border-radius: 3px;
+    color: #111;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* Amazon orange accent */
+:root {
+    --amazon-orange: #ff9900;
+    --amazon-dark: #131921;
+    --amazon-nav: #232f3e;
+    --amazon-link: #007185;
+    --amazon-yellow: #f0c040;
+    --amazon-border: #ddd;
+    --amazon-bg: #f3f3f3;
+}
+
+/* Links */
+a {
+    color: var(--amazon-link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: #c45500;
+    text-decoration: underline;
+}
+
+/* Table rows hover */
+tr:hover td {
+    background: #f5f5f5;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #aaa;
+    border-radius: 3px;
+}
+
+/* Form inputs */
+input, select, textarea {
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #e77600 !important;
+    box-shadow: 0 0 0 3px rgba(228,121,17,0.25);
+}
+
+/* Button hover effect */
+button {
+    transition: filter 0.15s;
+}
+button:hover:not(:disabled) {
+    filter: brightness(0.92);
+}
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
