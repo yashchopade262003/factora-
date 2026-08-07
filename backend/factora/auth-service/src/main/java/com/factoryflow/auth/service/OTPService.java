@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 
 import com.factoryflow.auth.InterfaceService.IOTPService;
 import com.factoryflow.auth.dao.UserDAO;
+import com.factoryflow.auth.dto.LoginResponse;
 import com.factoryflow.auth.entity.User;
-import com.factoryflow.auth.exception.AuthException;
+import com.factoryflow.auth.jwtUtils.JwtUtil;
 import com.factoryflow.auth.utils.OTPGenrator;
 
 @Service
@@ -25,13 +26,16 @@ public class OTPService implements IOTPService {
 	@Autowired
 	private UserDAO userDAO;
 
+	@Autowired
+	private JwtUtil jwtUtil;
+
 	@Override
 	public String sendOTP(String email) {
 
 		User user = userDAO.fincdByEmail(email);
 
 		if (user == null) {
-			throw new AuthException("Invalid email or password");
+			throw new RuntimeException("User Not Found");
 		}
 
 		String otp = OTPGenrator.generateOTP();
@@ -52,19 +56,44 @@ public class OTPService implements IOTPService {
 	}
 
 	@Override
-	public void verifyOTP(String email, String otp) {
+	public LoginResponse verifyOTP(String email, String otp) {
 
 		String storedOtp = otpStore.get(email);
 
 		if (storedOtp == null) {
-			throw new AuthException("OTP expired or was never sent. Please log in again.");
+			throw new RuntimeException("OTP Expired");
 		}
 
 		if (!storedOtp.equals(otp)) {
-			throw new AuthException("Invalid OTP");
+			throw new RuntimeException("Invalid OTP");
 		}
 
 		otpStore.remove(email);
+
+		User user = userDAO.fincdByEmail(email);
+
+		if (user == null) {
+			throw new RuntimeException("User Not Found");
+		}
+
+		String token = jwtUtil.generateToken(user.getEmail());
+
+		return new LoginResponse(
+
+				token,
+
+				user.getUserId(),
+
+				user.getUsername(),
+
+				user.getEmail(),
+
+				user.getRole().getRoleName(),
+
+				user.getVendor().getVendorId()
+
+		);
+
 	}
 
 }

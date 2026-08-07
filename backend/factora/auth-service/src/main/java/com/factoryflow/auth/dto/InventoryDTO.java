@@ -4,6 +4,12 @@ import java.time.LocalDate;
 
 import lombok.Data;
 
+/**
+ * Mirrors the shape of inventory-service's InventoryDTO. Kept as a plain,
+ * decoupled copy (status as String rather than inventory-service's
+ * InventoryStatus enum) so auth-service isn't compiled against
+ * inventory-service's internal types.
+ */
 @Data
 public class InventoryDTO {
 

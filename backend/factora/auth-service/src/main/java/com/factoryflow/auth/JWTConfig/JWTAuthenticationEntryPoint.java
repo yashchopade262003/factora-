@@ -12,16 +12,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class JWTAuthenticationEntryPoint
+        implements AuthenticationEntryPoint {
 
-	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException, ServletException {
+    @Override
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException)
+            throws IOException, ServletException {
 
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(
+                HttpServletResponse.SC_UNAUTHORIZED);
 
-		PrintWriter writer = response.getWriter();
+        PrintWriter writer =
+                response.getWriter();
 
-		writer.print("Unauthorized : " + authException.getMessage());
-	}
+        writer.print(
+                "Unauthorized : "
+                        + authException.getMessage());
+    }
 }

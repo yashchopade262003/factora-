@@ -1,31 +1,33 @@
 package org.inventry.service.client;
 
 import org.inventry.service.exception.VendorServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import feign.FeignException;
+
 
 @Component
 public class VendorClientFallbackFactory implements FallbackFactory<VendorClient> {
 
-    @Override
-    public VendorClient create(Throwable cause) {
+	private static final Logger log = LoggerFactory.getLogger(VendorClientFallbackFactory.class);
 
-        return vendorId -> {
+	@Override
+	public VendorClient create(Throwable cause) {
+		return vendorId -> {
+			log.warn("Vendor lookup failed for vendorId={}: {}", vendorId, cause.getMessage());
 
-            // Vendor ID not found
-            if (cause instanceof FeignException.NotFound) {
-                throw new VendorServiceException(
-                        "Vendor not found: " + vendorId,
-                        HttpStatus.NOT_FOUND);
-            }
+			if (cause instanceof FeignException.NotFound || cause instanceof HttpClientErrorException.NotFound) {
+				throw new VendorServiceException("Vendor Not Found with id: " + vendorId, HttpStatus.NOT_FOUND);
+			}
 
-            // Vendor Service is down
-            throw new VendorServiceException(
-                    "Vendor Service is unavailable",
-                    HttpStatus.SERVICE_UNAVAILABLE);
-        };
-    }
+			throw new VendorServiceException(
+					"Vendor Service is currently unavailable, please try again shortly",
+					HttpStatus.SERVICE_UNAVAILABLE);
+		};
+	}
 }

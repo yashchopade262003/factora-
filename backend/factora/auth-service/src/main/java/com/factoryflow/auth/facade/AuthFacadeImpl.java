@@ -3,46 +3,18 @@ package com.factoryflow.auth.facade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import com.factoryflow.auth.dao.UserDAO;
 import com.factoryflow.auth.dto.AuthRequest;
+import com.factoryflow.auth.dto.AuthResponse;
 import com.factoryflow.auth.dto.LoginResponse;
+import com.factoryflow.auth.dto.OTPRequest;
+import com.factoryflow.auth.dto.OTPRequrstVerify;
 import com.factoryflow.auth.entity.User;
-import com.factoryflow.auth.exception.AuthException;
-import com.factoryflow.auth.jwtUtils.JwtUtil;
 import com.factoryflow.auth.service.OTPService;
 
-/**
- * Facade over the whole login subsystem, behind one method:
- *
- *   Client
- *     |
- *     | POST /auth/login  (email + password [+ otp])
- *     v
- *   AuthController
- *     |
- *     v
- *   AuthFacade.login()
- *     |--> UserDAO                    (look up the account)
- *     |--> AuthenticationManager       (verify the password)
- *     |--> OTPService.sendOTP()         (first call: otp blank)
- *     |--> OTPService.verifyOTP()       (second call: otp filled in)
- *     |--> JwtUtil.generateToken()      (second call only)
- *     v
- *   LoginResponse
- *
- * The same /auth/login request shape is posted twice by the client:
- *   1. email + password, otp blank  -> credentials are checked, an OTP is
- *      emailed, and the response comes back with status=OTP_SENT and no
- *      token yet (the OTP can't be verified in this same call - the user
- *      hasn't had a chance to read and enter it).
- *   2. email + password + otp       -> credentials are checked again, the
- *      OTP is verified, and the response comes back with
- *      status=LOGIN_SUCCESS and a real JWT.
- */
 @Component
 public class AuthFacadeImpl implements IAuthFacade {
 
@@ -51,50 +23,47 @@ public class AuthFacadeImpl implements IAuthFacade {
 
     @Autowired
     private OTPService otpService;
-
     @Autowired
-    private UserDAO userDAO;
-
+    UserDAO userDAO;
     @Autowired
-    private JwtUtil jwtUtil;
+    PasswordEncoder passwordEncoder;
 
     @Override
-    public LoginResponse login(AuthRequest request) {
+    public AuthResponse login(AuthRequest request) {
 
         User user = userDAO.userLogin(request.getEmail());
 
-        if (user == null) {
-          
-            throw new AuthException("Invalid email or password");
-        }
+        System.out.println("Entered Email      : " + request.getEmail());
+        System.out.println("Entered Password   : " + request.getPassword());
+        System.out.println("Password From DB   : " + user.getPassword());
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()));
-        } catch (AuthenticationException ex) {
-            throw new AuthException("Invalid email or password");
-        }
+        boolean matched = passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword());
 
-        if (!StringUtils.hasText(request.getOtp())) {
-            otpService.sendOTP(request.getEmail());
-            return new LoginResponse("OTP_SENT", null, null, null, null, null, null);
-        }
+        System.out.println("Password Matched   : " + matched);
 
-        otpService.verifyOTP(request.getEmail(), request.getOtp());
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        return new AuthResponse("LOGIN_SUCCESS");
+    }
+    @Override
+    public String sendOTP(OTPRequest request) {
 
-        return new LoginResponse(
-                "LOGIN_SUCCESS",
-                token,
-                user.getUserId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole() != null ? user.getRole().getRoleName() : null,
-                user.getVendor() != null ? user.getVendor().getVendorId() : null
-        );
+        return otpService.sendOTP(request.getEmail());
+
+    }
+
+    @Override
+    public LoginResponse verifyOTP(OTPRequrstVerify request) {
+
+        return otpService.verifyOTP(
+                request.getEmail(),
+                request.getOtp());
+
     }
 
 }

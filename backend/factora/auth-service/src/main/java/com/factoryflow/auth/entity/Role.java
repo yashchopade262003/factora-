@@ -1,6 +1,6 @@
 package com.factoryflow.auth.entity;
 
-import java.util.List;
+import java.util.List; 
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +20,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_seq")
     @SequenceGenerator(name = "role_seq", sequenceName = "role_seq", initialValue = 101, allocationSize = 1)
     private Long roleId;
+
 
     private String roleName;
 

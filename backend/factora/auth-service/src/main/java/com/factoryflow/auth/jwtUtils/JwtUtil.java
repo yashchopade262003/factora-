@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -15,22 +14,9 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-	@Value("${jwt.secret:factoryflowjwtsecretkeyfactoryflowjwtsecretkey2026}")
-	private String secret;
+	private static final String SECRET = "factoryflowjwtsecretkeyfactoryflowjwtsecretkey2026";
 
-	private SecretKey key;
-
-	private SecretKey getKey() {
-
-		if (key == null) {
-
-			key = Keys.hmacShaKeyFor(secret.getBytes());
-
-		}
-
-		return key;
-
-	}
+	private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
 	public String generateToken(String email) {
 
@@ -42,7 +28,7 @@ public class JwtUtil {
 
 				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
 
-				.signWith(getKey(), SignatureAlgorithm.HS256)
+				.signWith(key, SignatureAlgorithm.HS256)
 
 				.compact();
 
@@ -58,7 +44,7 @@ public class JwtUtil {
 
 		return Jwts.parserBuilder()
 
-				.setSigningKey(getKey())
+				.setSigningKey(key)
 
 				.build()
 

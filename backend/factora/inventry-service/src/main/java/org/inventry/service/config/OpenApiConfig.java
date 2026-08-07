@@ -7,13 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 
-/**
- * springdoc-openapi-ui was already on the classpath but unconfigured, so it
- * only produced generic defaults. This gives the generated docs (available
- * at /swagger-ui.html and /v3/api-docs) a real title/description, which
- * matters once this service sits behind an API gateway alongside the other
- * FactoryFlow microservices.
- */
+
 @Configuration
 public class OpenApiConfig {
 

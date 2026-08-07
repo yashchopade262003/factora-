@@ -25,12 +25,7 @@ public class InventoryClientFallbackFactory implements FallbackFactory<Inventory
 		return materialName -> {
 			log.warn("Inventory lookup failed for materialName={}: {}", materialName, cause.getMessage());
 
-			// Inventory Service answers "Material Not Found" with 400 Bad Request
-			// (not 404) for this endpoint. Given the materialName we send is
-			// always the order's own productName, a 400 here reliably means
-			// "no stock record for this product" - i.e. zero stock - rather
-			// than a malformed request, so we treat it as such instead of
-			// blocking the buyer order.
+			
 			if (cause instanceof FeignException.BadRequest || cause instanceof FeignException.NotFound
 					|| cause instanceof HttpClientErrorException.BadRequest
 					|| cause instanceof HttpClientErrorException.NotFound) {

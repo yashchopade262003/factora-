@@ -228,6 +228,7 @@ public class InventoryController {
 
 	@GetMapping("/page")
 	public ResponseEntity<ResponseStructure<Page<InventoryDTO>>> getInventoryByPage(
+
 			@RequestParam(defaultValue = "0") int page,
 
 			@RequestParam(defaultValue = "10") int size) {

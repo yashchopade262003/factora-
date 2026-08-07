@@ -1,5 +1,6 @@
 package org.inventry.service.config;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -11,24 +12,24 @@ import jakarta.servlet.http.HttpServletRequest;
 @Configuration
 public class FeignConfig {
 
-	@Bean
-	public RequestInterceptor requestInterceptor() {
+    @Bean
+    public RequestInterceptor requestInterceptor() {
 
-		return requestTemplate -> {
+        return requestTemplate -> {
 
-			ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-					.getRequestAttributes();
+            ServletRequestAttributes attributes =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
-			if (attributes != null) {
+            if (attributes != null) {
 
-				HttpServletRequest request = attributes.getRequest();
+                HttpServletRequest request = attributes.getRequest();
 
-				String token = request.getHeader("Authorization");
+                String token = request.getHeader("Authorization");
 
-				if (token != null) {
-					requestTemplate.header("Authorization", token);
-				}
-			}
-		};
-	}
+                if (token != null) {
+                    requestTemplate.header("Authorization", token);
+                }
+            }
+        };
+    }
 }

@@ -1,16 +1,17 @@
 import api from "../api/axios";
 
-// Single endpoint for the whole login flow, posted twice by the caller:
-//   1. login({ email, password })        -> { status: "OTP_SENT" }
-//   2. login({ email, password, otp })   -> { status: "LOGIN_SUCCESS", token, ... }
 const login = (data) => api.post("/auth/login", data);
 
 const register = (data) => api.post("/user/register", data);
 
+const sendOtp = (data) => api.post("/auth/send-otp", data);
+
+const verifyOtp = (data) => api.post("/auth/verify-otp", data);
+
 // ---------------------------------------------------------------------------
 // Session helpers
 //
-// The backend's login response isn't guaranteed to be a flat object.
+// The backend's verify-otp response isn't guaranteed to be a flat object.
 // Two things in particular vary between backends / can change over time:
 //   1. The payload may be wrapped, e.g. { success, message, data: {...} }
 //   2. `role` may come back as a plain string ("ADMIN"), a prefixed string
@@ -49,7 +50,7 @@ const isEmptyValue = (value) =>
     value === "null";
 
 /**
- * Normalizes and persists the session from the second (otp-filled-in) login() call's response.
+ * Normalizes and persists the session from a verify-otp (or login) response.
  * Returns the normalized payload so callers can use it right away
  * (e.g. to decide where to redirect) without re-reading localStorage.
  */
@@ -87,6 +88,8 @@ const logout = () => {
 export default {
     login,
     register,
+    sendOtp,
+    verifyOtp,
     saveSession,
     isAuthenticated,
     getRole,

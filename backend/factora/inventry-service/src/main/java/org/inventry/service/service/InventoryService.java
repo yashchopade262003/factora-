@@ -40,6 +40,8 @@ public class InventoryService {
 	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> saveInventory(InventoryDTO dto) {
 
+		// Throws VendorServiceException (404/503, handled globally) if the
+		// vendor doesn't exist or the Vendor service is unreachable.
 		vendorClient.getVendor(dto.getVendorId());
 
 		if (inventoryDAO.existsByMaterialCode(dto.getMaterialCode())) {
@@ -54,8 +56,8 @@ public class InventoryService {
 
 		InventoryDTO responseDTO = mapper.map(savedInventory, InventoryDTO.class);
 
-		log.info("Inventory created: materialCode={}, vendorId={}, quantity={}", savedInventory.getMaterialCode(),
-				savedInventory.getVendorId(), savedInventory.getQuantity());
+		log.info("Inventory created: materialCode={}, vendorId={}, quantity={}",
+				savedInventory.getMaterialCode(), savedInventory.getVendorId(), savedInventory.getQuantity());
 
 		ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
 		response.setStatusCode(HttpStatus.CREATED.value());
@@ -182,22 +184,24 @@ public class InventoryService {
 
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByVendor(Long vendorId) {
 
-		vendorClient.getVendor(vendorId);
+	    vendorClient.getVendor(vendorId);
 
-		List<Inventory> inventories = inventoryDAO.findByVendorId(vendorId);
+	    List<Inventory> inventories = inventoryDAO.findByVendorId(vendorId);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("Vendor Inventory Not Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("Vendor Inventory Not Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Vendor Inventory Found");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Vendor Inventory Found");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByCategory(String category) {
@@ -260,63 +264,65 @@ public class InventoryService {
 	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> stockIn(Long id, Double quantity) {
 
-		if (quantity <= 0) {
-			throw new InventoryException("Quantity must be greater than zero");
-		}
+	    if (quantity <= 0) {
+	        throw new InventoryException("Quantity must be greater than zero");
+	    }
 
-		Inventory inventory = inventoryDAO.getInventoryById(id)
-				.orElseThrow(() -> new InventoryException("Inventory Not Found"));
+	    Inventory inventory = inventoryDAO.getInventoryById(id)
+	            .orElseThrow(() -> new InventoryException("Inventory Not Found"));
 
-		inventory.setQuantity(inventory.getQuantity() + quantity);
+	    inventory.setQuantity(inventory.getQuantity() + quantity);
 
-		updateInventoryStatus(inventory);
+	    updateInventoryStatus(inventory);
 
-		Inventory saved = inventoryDAO.saveInventory(inventory);
+	    Inventory saved = inventoryDAO.saveInventory(inventory);
 
-		log.info("Stock-in: inventoryId={}, qtyAdded={}, newQuantity={}", id, quantity, saved.getQuantity());
+	    log.info("Stock-in: inventoryId={}, qtyAdded={}, newQuantity={}", id, quantity, saved.getQuantity());
 
-		InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
+	    InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
 
-		ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Stock Added Successfully");
-		response.setData(dto);
+	    ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Stock Added Successfully");
+	    response.setData(dto);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> stockOut(Long id, Double quantity) {
 
-		if (quantity <= 0) {
-			throw new InventoryException("Quantity must be greater than zero");
-		}
+	    if (quantity <= 0) {
+	        throw new InventoryException("Quantity must be greater than zero");
+	    }
 
-		Inventory inventory = inventoryDAO.getInventoryById(id)
-				.orElseThrow(() -> new InventoryException("Inventory Not Found"));
+	    Inventory inventory = inventoryDAO.getInventoryById(id)
+	            .orElseThrow(() -> new InventoryException("Inventory Not Found"));
 
-		if (inventory.getQuantity() < quantity) {
-			throw new InventoryException("Insufficient Stock");
-		}
+	    if (inventory.getQuantity() < quantity) {
+	        throw new InventoryException("Insufficient Stock");
+	    }
 
-		inventory.setQuantity(inventory.getQuantity() - quantity);
+	    inventory.setQuantity(inventory.getQuantity() - quantity);
 
-		updateInventoryStatus(inventory);
+	    updateInventoryStatus(inventory);
 
-		Inventory saved = inventoryDAO.saveInventory(inventory);
+	    Inventory saved = inventoryDAO.saveInventory(inventory);
 
-		log.info("Stock-out: inventoryId={}, qtyRemoved={}, newQuantity={}", id, quantity, saved.getQuantity());
+	    log.info("Stock-out: inventoryId={}, qtyRemoved={}, newQuantity={}", id, quantity, saved.getQuantity());
 
-		InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
+	    InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
 
-		ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Stock Issued Successfully");
-		response.setData(dto);
+	    ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Stock Issued Successfully");
+	    response.setData(dto);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getLowStockInventory() {
 
 		List<Inventory> inventories = inventoryDAO.findByStatus(InventoryStatus.LOW_STOCK);
@@ -400,27 +406,27 @@ public class InventoryService {
 	@Transactional
 	public ResponseEntity<ResponseStructure<InventoryDTO>> adjustStock(Long id, Double quantity) {
 
-		if (quantity < 0) {
-			throw new InventoryException("Quantity cannot be negative");
-		}
+	    if (quantity < 0) {
+	        throw new InventoryException("Quantity cannot be negative");
+	    }
 
-		Inventory inventory = inventoryDAO.getInventoryById(id)
-				.orElseThrow(() -> new InventoryException("Inventory Not Found"));
+	    Inventory inventory = inventoryDAO.getInventoryById(id)
+	            .orElseThrow(() -> new InventoryException("Inventory Not Found"));
 
-		inventory.setQuantity(quantity);
+	    inventory.setQuantity(quantity);
 
-		updateInventoryStatus(inventory);
+	    updateInventoryStatus(inventory);
 
-		Inventory saved = inventoryDAO.saveInventory(inventory);
+	    Inventory saved = inventoryDAO.saveInventory(inventory);
 
-		InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
+	    InventoryDTO dto = mapper.map(saved, InventoryDTO.class);
 
-		ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Stock Adjusted Successfully");
-		response.setData(dto);
+	    ResponseStructure<InventoryDTO> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Stock Adjusted Successfully");
+	    response.setData(dto);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	public ResponseEntity<ResponseStructure<InventoryDashboardDTO>> getDashboard() {
@@ -523,20 +529,22 @@ public class InventoryService {
 
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByWarehouse(String location) {
 
-		List<Inventory> inventories = inventoryDAO.findByWareHouseLocation(location);
+	    List<Inventory> inventories = inventoryDAO.findByWareHouseLocation(location);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("No Inventory Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("No Inventory Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Warehouse Inventory");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Warehouse Inventory");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	public ResponseEntity<ResponseStructure<InventoryDTO>> findByMaterialCode(String code) {
@@ -552,125 +560,144 @@ public class InventoryService {
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByMaterialName(String materialName) {
 
-		List<Inventory> inventories = inventoryDAO.findByMaterialName(materialName);
+	    List<Inventory> inventories = inventoryDAO.findByMaterialName(materialName);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("Material Not Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("Material Not Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Material Found Successfully");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Material Found Successfully");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByBatchNumber(String batchNumber) {
 
-		List<Inventory> inventories = inventoryDAO.findByBatchNumber(batchNumber);
+	    List<Inventory> inventories = inventoryDAO.findByBatchNumber(batchNumber);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("Batch Not Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("Batch Not Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Batch Inventory Found");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Batch Inventory Found");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getExpiredMaterials() {
 
-		List<Inventory> inventories = inventoryDAO.findExpiredMaterials(LocalDate.now());
+	    List<Inventory> inventories =
+	            inventoryDAO.findExpiredMaterials(LocalDate.now());
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Expired Materials");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Expired Materials");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> getExpiringMaterials(int days) {
 
-		LocalDate today = LocalDate.now();
+	    LocalDate today = LocalDate.now();
 
-		LocalDate endDate = today.plusDays(days);
+	    LocalDate endDate = today.plusDays(days);
 
-		List<Inventory> inventories = inventoryDAO.findExpiringMaterials(today, endDate);
+	    List<Inventory> inventories =
+	            inventoryDAO.findExpiringMaterials(today, endDate);
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Expiring Materials");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Expiring Materials");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByReceivedDate(LocalDate date) {
 
-		List<Inventory> inventories = inventoryDAO.findByReceivedDate(date);
+	    List<Inventory> inventories = inventoryDAO.findByReceivedDate(date);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("No Inventory Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("No Inventory Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Inventory Received On " + date);
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Inventory Received On " + date);
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
 	public ResponseEntity<ResponseStructure<List<InventoryDTO>>> findByManufacturingDate(LocalDate date) {
 
-		List<Inventory> inventories = inventoryDAO.findByManufacturingDate(date);
+	    List<Inventory> inventories =
+	            inventoryDAO.findByManufacturingDate(date);
 
-		if (inventories.isEmpty()) {
-			throw new InventoryException("No Inventory Found");
-		}
+	    if (inventories.isEmpty()) {
+	        throw new InventoryException("No Inventory Found");
+	    }
 
-		List<InventoryDTO> dtoList = inventories.stream().map(i -> mapper.map(i, InventoryDTO.class)).toList();
+	    List<InventoryDTO> dtoList = inventories.stream()
+	            .map(i -> mapper.map(i, InventoryDTO.class))
+	            .toList();
 
-		ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Manufactured Inventory");
-		response.setData(dtoList);
+	    ResponseStructure<List<InventoryDTO>> response = new ResponseStructure<>();
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Manufactured Inventory");
+	    response.setData(dtoList);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	
 	public ResponseEntity<ResponseStructure<Page<InventoryDTO>>> getInventoryByPage(int page, int size) {
 
-		PageRequest pageable = PageRequest.of(page, size);
+	    PageRequest pageable = PageRequest.of(page, size);
 
-		Page<InventoryDTO> dtoPage = inventoryDAO.getAll(pageable)
-				.map(inventory -> mapper.map(inventory, InventoryDTO.class));
+	    Page<InventoryDTO> dtoPage = inventoryDAO.getAll(pageable)
+	            .map(inventory -> mapper.map(inventory, InventoryDTO.class));
 
-		ResponseStructure<Page<InventoryDTO>> response = new ResponseStructure<>();
+	    ResponseStructure<Page<InventoryDTO>> response = new ResponseStructure<>();
 
-		response.setStatusCode(HttpStatus.OK.value());
-		response.setMessage("Inventory Page");
-		response.setData(dtoPage);
+	    response.setStatusCode(HttpStatus.OK.value());
+	    response.setMessage("Inventory Page");
+	    response.setData(dtoPage);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	
 }

@@ -41,9 +41,6 @@ public class BuyerOrderService {
 	@Autowired
 	private InventoryClient inventoryClient;
 
-	// Business Issue #1/#2/#3: creating a Buyer Order automatically checks
-	// Inventory for this vendor/product. Enough stock -> READY_FOR_DISPATCH,
-	// otherwise -> IN_PRODUCTION so the shop floor knows to manufacture it.
 	public ResponseEntity<ResponseStructure<BuyerOrderDTO>> createOrder(BuyerOrderDTO dto) {
 		vendorClient.getVendor(dto.getVendorId());
 

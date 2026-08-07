@@ -1,9 +1,10 @@
 package com.factoryflow.auth.InterfaceService;
 
+import com.factoryflow.auth.dto.LoginResponse;
+
 public interface IOTPService {
 
     String sendOTP(String phone);
 
- 
-    void verifyOTP(String email, String otp);
+    LoginResponse verifyOTP(String email, String otp);
 }

@@ -20,57 +20,68 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	@Autowired
-	private JwtUtil jwtUtil;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-	@Autowired
-	private UserDetailsService userDetailsService;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
-		String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-		String token = null;
-		String email = null;
+        String token = null;
+        String email = null;
 
-		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
 
-			token = authHeader.substring(7);
+            token = authHeader.substring(7);
 
-			try {
+            try {
 
-				email = jwtUtil.extractUsername(token);
+                email = jwtUtil.extractUsername(token);
 
-			} catch (JwtException e) {
+            } catch (JwtException e) {
 
-				filterChain.doFilter(request, response);
-				return;
+                filterChain.doFilter(request, response);
+                return;
 
-			}
+            }
 
-		}
+        }
 
-		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
 
-			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            UserDetails userDetails =
+                    userDetailsService.loadUserByUsername(email);
 
-			if (jwtUtil.validateToken(token, email)) {
+            if (jwtUtil.validateToken(token, email)) {
 
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities());
 
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request));
 
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authentication);
 
-			}
+            }
 
-		}
+        }
 
-		filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
 
-	}
+    }
 
 }

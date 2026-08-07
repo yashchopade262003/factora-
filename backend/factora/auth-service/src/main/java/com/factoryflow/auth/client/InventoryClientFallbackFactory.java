@@ -16,7 +16,7 @@ import com.factoryflow.auth.exception.DownstreamServiceException;
 
 import feign.FeignException;
 
- 
+
 @Component
 public class InventoryClientFallbackFactory implements FallbackFactory<InventoryClient> {
 
@@ -32,8 +32,6 @@ public class InventoryClientFallbackFactory implements FallbackFactory<Inventory
 				log.warn("Inventory lookup failed for vendorId={}: {}", vendorId, cause.getMessage());
 
 				if (cause instanceof FeignException.BadRequest || cause instanceof FeignException.NotFound) {
-					// inventory-service returns 400 when a vendor simply has no
-					// inventory recorded yet - that's a normal state, not a failure.
 					return new ApiResponse<>(HttpStatus.OK.value(), "No Inventory Found For Vendor",
 							Collections.emptyList());
 				}

@@ -1,5 +1,6 @@
 package com.factoryflow.auth.config;
 
+
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,30 +16,35 @@ import com.factoryflow.auth.service.CustomUserDetailsService;
 @Configuration
 public class Configure {
 
-	@Bean
-	public ModelMapper mapper() {
-		return new ModelMapper();
-	}
+    @Bean
+    public ModelMapper mapper() {
+        return new ModelMapper();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public AuthenticationProvider authenticationProvider(CustomUserDetailsService userDetailsService) {
+    @Bean
+    public AuthenticationProvider authenticationProvider(
+            CustomUserDetailsService userDetailsService) {
 
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
 
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
 
-		return provider;
-	}
+        return provider;
+    }
+    
 
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config)
+            throws Exception {
 
-		return config.getAuthenticationManager();
-	}
+        return config.getAuthenticationManager();
+    }
 }

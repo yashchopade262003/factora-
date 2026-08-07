@@ -18,13 +18,8 @@ function Login() {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await authService.login({
-                email: loginData.email,
-                password: loginData.password,
-            });
-            if (response.data?.status !== "OTP_SENT") {
-                throw new Error("Unexpected response from server.");
-            }
+            await authService.login(loginData);
+            await authService.sendOtp({ email: loginData.email });
             alert("OTP Sent Successfully.");
             setStep(2);
         } catch (error) {
@@ -40,9 +35,8 @@ const verifyOTP = async (e) => {
     setLoading(true);
 
     try {
-        const response = await authService.login({
+        const response = await authService.verifyOtp({
             email: loginData.email,
-            password: loginData.password,
             otp,
         });
 

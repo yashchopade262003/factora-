@@ -50,8 +50,7 @@ public class ProductionService {
 
 	public ResponseEntity<ResponseStructure<ProductionOrderDTO>> createOrder(ProductionOrderDTO dto) {
 
-		// Validates the vendor exists via Auth Service; throws VendorServiceException
-		// (mapped to 404/503 by GlobalExceptionHandler) if it doesn't.
+	
 		vendorClient.getVendor(dto.getVendorId());
 
 		validateRawMaterialQuantity(dto.getRawMaterialQuantity());
@@ -79,11 +78,13 @@ public class ProductionService {
 		return build(HttpStatus.OK, "Production Orders Fetched Successfully", orders);
 	}
 
+	
 	public ResponseEntity<ResponseStructure<List<ProductionOrderDTO>>> getOrdersByStatus(ProductionStatus status) {
 		List<ProductionOrderDTO> orders = repository.findByStatus(status).stream().map(this::toDTO)
 				.collect(Collectors.toList());
 		return build(HttpStatus.OK, "Production Orders Fetched Successfully", orders);
 	}
+
 
 	public ResponseEntity<ResponseStructure<ProductionOrderDTO>> updateOrder(Long id, ProductionOrderDTO dto) {
 		if (dto.getRawMaterialQuantity() != null) {
@@ -100,7 +101,7 @@ public class ProductionService {
 		return build(HttpStatus.OK, "Production Order Updated Successfully", toDTO(order));
 	}
 
-
+	
 	public ResponseEntity<ResponseStructure<ProductionOrderDTO>> startProduction(Long id) {
 		ProductionOrder order = findOrThrow(id);
 
@@ -182,7 +183,7 @@ public class ProductionService {
 		}
 	}
 
-
+	
 	private Long resolveFinishedGoodsInventoryId(ProductionOrder order) {
 		if (order.getFinishedGoodsInventoryId() != null) {
 			return order.getFinishedGoodsInventoryId();
