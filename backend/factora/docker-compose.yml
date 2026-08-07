@@ -1,19 +1,170 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:16
     container_name: postgres-db
     restart: always
-
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: authdb
-
+      POSTGRES_PASSWORD: root
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - factora-network
+
+  eureka-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: eureka-server
+        APP_PORT: 8761
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      SERVER_PORT: 8761
+    networks:
+      - factora-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: auth-service
+        APP_PORT: 8081
+    container_name: auth-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres:5432/factora_auth
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8081:8081"
+    networks:
+      - factora-network
+
+  inventry-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: inventry-service
+        APP_PORT: 8082
+    container_name: inventry-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://postgres:5432/factora_inventory
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8082:8082"
+    networks:
+      - factora-network
+
+  production-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: production-service
+        APP_PORT: 8083
+    container_name: production-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: 8083
+      DB_URL: jdbc:postgresql://postgres:5432/factora_production
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8083:8083"
+    networks:
+      - factora-network
+
+  dispatch-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: dispatch-service
+        APP_PORT: 8084
+    container_name: dispatch-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: 8084
+      DB_URL: jdbc:postgresql://postgres:5432/factora_dispatch
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8084:8084"
+    networks:
+      - factora-network
+
+  buyer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: buyer-service
+        APP_PORT: 8085
+    container_name: buyer-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: 8085
+      DB_URL: jdbc:postgresql://postgres:5432/factora_buyer
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8085:8085"
+    networks:
+      - factora-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: api-gateway
+        APP_PORT: 8080
+    container_name: api-gateway
+    depends_on:
+      - auth-service
+      - inventry-service
+      - production-service
+      - dispatch-service
+      - buyer-service
+    environment:
+      SERVER_PORT: 8080
+      EUREKA_URL: http://eureka-server:8761/eureka
+    ports:
+      - "8080:8080"
+    networks:
+      - factora-network
+
+networks:
+  factora-network:
 
 volumes:
   postgres_data:
